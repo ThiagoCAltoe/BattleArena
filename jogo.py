@@ -46,6 +46,12 @@ class Heroi(Personagem):
     def exibir_detalhes(self):
         return f'{super().exibir_detalhes()}\nHabilidade: {self.__habilidade}\n'
 
+    def ataque_especial(self, alvo):
+        dano1 = self.get_nivel() * 2
+        dano2 = self.get_nivel() * 5
+        dano = random.randint(dano1, dano2)
+        alvo.receber_dano(dano)
+        print(f'{self.get_nome()} usou {self.__habilidade} e causou {dano} de dano.')
 class Inimigo(Personagem):
     def __init__(self, nome, vida, nivel, tipo):
         super().__init__(nome, vida, nivel)
@@ -75,6 +81,8 @@ class Jogo:
             escolha = input("Escolha (1 - Ataque Normal, 2 - Ataque Especial): ")
             if escolha == '1':
                 self.heroi.atacar(self.inimigo)
+            elif escolha == '2':
+                self.heroi.ataque_especial(self.inimigo)
             else:
                 print('Escolha inválida! Escolha novamente.')
         if self.heroi.get_vida() > 0:
