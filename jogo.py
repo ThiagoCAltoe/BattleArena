@@ -1,9 +1,4 @@
 import random
-
-# Personagem: classe mãe
-# Heroi: controlado pelo usuario
-# Inimigo: Adversário
-
 class Personagem:
     def __init__(self, nome, vida, nivel):
         self.__nome = nome 
@@ -39,6 +34,7 @@ class Heroi(Personagem):
     def __init__(self, nome, vida, nivel, habilidade):
         super().__init__(nome, vida, nivel)
         self.__habilidade = habilidade
+        self.__cooldown = 3
 
     def get_habilidade(self):
         return self.__habilidade
@@ -47,11 +43,24 @@ class Heroi(Personagem):
         return f'{super().exibir_detalhes()}\nHabilidade: {self.__habilidade}\n'
 
     def ataque_especial(self, alvo):
+      if self.__cooldown == 0:
         dano1 = self.get_nivel() * 2
         dano2 = self.get_nivel() * 5
         dano = random.randint(dano1, dano2)
         alvo.receber_dano(dano)
         print(f'{self.get_nome()} usou {self.__habilidade} e causou {dano} de dano.')
+        self.__cooldown = 3
+        return True
+      else:
+        print('Habilidade em cooldown, escolha outra opção.')
+        return False
+
+    def get_cooldown(self):
+      return self.__cooldown
+
+    def att_cooldown(self):
+      if self.__cooldown > 0:
+        self.__cooldown -= 1
 class Inimigo(Personagem):
     def __init__(self, nome, vida, nivel, tipo):
         super().__init__(nome, vida, nivel)
@@ -78,17 +87,40 @@ class Jogo:
             print(self.inimigo.exibir_detalhes())
 
             input('Pressione enter para atacar...')
-            escolha = input("Escolha (1 - Ataque Normal, 2 - Ataque Especial): ")
-            if escolha == '1':
-                self.heroi.atacar(self.inimigo)
-            elif escolha == '2':
-                self.heroi.ataque_especial(self.inimigo)
-            else:
-                print('Escolha inválida! Escolha novamente.')
+
+            acao_valida = False # Variável para controlar a escolha do jogador
+            while not acao_valida:
+              escolha = input("Escolha (1 - Ataque Normal, 2 - Ataque Especial): ")
+              if escolha == '1':
+                  self.heroi.atacar(self.inimigo)
+                  acao_valida = True
+              elif escolha == '2':
+                    acao_valida = self.heroi.ataque_especial(self.inimigo)
+                    if not acao_valida:
+                        print("\nDetalhes dos personagens:")
+                        print(self.heroi.exibir_detalhes())
+                        print(self.inimigo.exibir_detalhes())
+                        print('\nHabilidade em cooldown, escolha outra opção.\n')
+              else:
+                  print("\nDetalhes dos personagens:")
+                  print(self.heroi.exibir_detalhes())
+                  print(self.inimigo.exibir_detalhes())
+                  print('\nEscolha inválida! Escolha novamente.\n')
+
+            self.heroi.att_cooldown()
+
+            if self.inimigo.get_vida() > 0 and acao_valida:
+                self.inimigo.atacar(self.heroi) # Inimigo ataca o heroi
         if self.heroi.get_vida() > 0:
-            print('\nParabéns, Você venceu a batalha!')
+            print("\nDetalhes dos personagens:")
+            print(self.heroi.exibir_detalhes())
+            print(self.inimigo.exibir_detalhes())
+            print('\nParabéns, Você venceu a batalha!\n')
         else:
-            print('\nVocê foi derrotado!')
+            print("\nDetalhes dos personagens:")
+            print(self.heroi.exibir_detalhes())
+            print(self.inimigo.exibir_detalhes())
+            print('\nVocê foi derrotado!\n')
 
 #criar istancia do jogo e iniciar a batalha
 jogo = Jogo()
